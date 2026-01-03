@@ -1,1 +1,79 @@
 index.html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>STS Prognostic Calculator</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: system-ui, sans-serif; background:#fafafa; margin:0; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 24px; }
+    .card { background:#fff; border:1px solid #eee; border-radius:14px; padding:20px; }
+    h1 { margin-top:0; }
+    label { display:block; margin-top:12px; font-size:14px; }
+    input, select { width:100%; padding:10px; margin-top:6px; }
+    button { margin-top:16px; padding:12px; width:100%; background:#111; color:#fff; border:none; }
+    .out { margin-top:20px; padding:12px; background:#f6f6f6; border-radius:10px; }
+    .small { font-size:12px; color:#666; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>STS Individualized Prognostic Calculator</h1>
+      <p class="small">For research use only. Not a substitute for clinical judgment.</p>
+
+      <label>Age</label>
+      <input id="age" type="number" value="58">
+
+      <label>Tumor size (mm)</label>
+      <input id="size" type="number" value="50">
+
+      <label>Grade</label>
+      <select id="grade">
+        <option value="I">I</option>
+        <option value="II">II</option>
+        <option value="III" selected>III</option>
+        <option value="IV">IV</option>
+      </select>
+
+      <button onclick="calc()">Calculate</button>
+
+      <div class="out" id="out">—</div>
+    </div>
+  </div>
+
+<script>
+/* ===== 示例 Cox 参数（占位）===== */
+const COEF = {
+  age: 0.03,
+  size: 0.06,
+  gradeIII: 0.5,
+  gradeIV: 1.2
+};
+
+/* ===== 基线生存（占位）===== */
+const S0 = { "1y": 0.90, "3y": 0.75, "5y": 0.62 };
+
+function calc(){
+  const age = Number(document.getElementById("age").value);
+  const size = Number(document.getElementById("size").value);
+  const grade = document.getElementById("grade").value;
+
+  let lp = COEF.age * age + COEF.size * (size / 10);
+  if (grade === "III") lp += COEF.gradeIII;
+  if (grade === "IV") lp += COEF.gradeIV;
+
+  const hr = Math.exp(lp);
+  let html = `<b>Linear predictor:</b> ${lp.toFixed(3)}<br><br>`;
+
+  for (const t in S0){
+    const s = Math.pow(S0[t], hr);
+    html += `<b>${t} OS:</b> ${(s*100).toFixed(1)}%<br>`;
+  }
+
+  document.getElementById("out").innerHTML = html;
+}
+</script>
+</body>
+</html>
